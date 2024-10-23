@@ -10,7 +10,9 @@ namespace EndlessEscapade.Common.World;
 
 public sealed class AlgaeSystem : ModSystem {
 
-
+    public override void PostSetupContent() {
+        LoadWhitelist();
+    }
 
     public override unsafe void SaveWorldData(TagCompound tag) {
         AlgaeData[] algaeData = Main.tile.GetData<AlgaeData>();
@@ -31,7 +33,6 @@ public sealed class AlgaeSystem : ModSystem {
         AlgaeData[] algaeWorldDataRef = Main.tile.GetData<AlgaeData>();
         byte[] algaeData = tag.GetByteArray("algaeTileData");
 
-        // Safely get blossom binary tile data from the tag and apply it to the world.
         fixed(AlgaeData* dataPtr = algaeWorldDataRef) {
             byte* bytePtr = (byte*)dataPtr;
             Span<byte> algaeDataWrapper = new(bytePtr, algaeWorldDataRef.Length);
@@ -39,6 +40,70 @@ public sealed class AlgaeSystem : ModSystem {
 
             if(savedDataWrapper.Length == algaeDataWrapper.Length)
                 savedDataWrapper.CopyTo(algaeDataWrapper);
+        }
+    }
+
+    /// <summary>
+    /// Anything not in this list cannot have algae grow on it.
+    /// </summary>
+    public static List<int> WhitelistedTiles = [];
+
+    public void AddToAlgaeWhitelist(params int[] tileTypes) {
+        for(int i = 0; i < tileTypes.Length; i++) {
+            WhitelistedTiles.Add(i);
+        }
+    }
+
+    public void AddToAlgaeWhitelist(bool[] set) {
+        for(int i = 0; i < set.Length; i++) {
+            if(set[i]) {
+                AddToAlgaeWhitelist(i);
+            }
+        }
+    }
+
+    public void LoadWhitelist() {
+        AddToAlgaeWhitelist(TileID.Sets.Stone);
+
+        AddToAlgaeWhitelist(
+            TileID.WoodBlock,
+            TileID.AshWood,
+            TileID.Shadewood,
+            TileID.Pearlwood,
+            TileID.BorealWood,
+            TileID.LivingWood,
+            TileID.DynastyWood,
+            TileID.Ebonwood,
+            TileID.SpookyWood
+        );
+
+        AddToAlgaeWhitelist(
+            TileID.Sand,
+            TileID.ShellPile
+        );
+    }
+}
+
+public sealed class TileOverlayTesting : ModPlayer {
+    public override void PreUpdate() {
+        if(Main.keyState.IsKeyDown(Keys.Q)) {
+            var tilePos = Main.MouseWorld.ToTileCoordinates();
+
+            var tile = Main.tile[tilePos.X, tilePos.Y];
+
+            ref AlgaeData algaeData = ref tile.Get<AlgaeData>();
+
+            algaeData.HasAlgae = (byte)1;
+        }
+
+        if(Main.keyState.IsKeyDown(Keys.F)) {
+            var tilePos = Main.MouseWorld.ToTileCoordinates();
+
+            var tile = Main.tile[tilePos.X, tilePos.Y];
+
+            ref AlgaeData algaeData = ref tile.Get<AlgaeData>();
+
+            algaeData.HasAlgae = (byte)0;
         }
     }
 }

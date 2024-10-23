@@ -20,7 +20,7 @@ public sealed class AlgaeGlobalTile : GlobalTile {
         var tile = Main.tile[i, j];
         ref AlgaeData algaeData = ref tile.Get<AlgaeData>();
 
-        if(algaeData.HasAlgae == 0)
+        if(algaeData.HasAlgae == 0 || AlgaeSystem.WhitelistedTiles.Contains(tile.TileType))
             return;
 
         var position = new Point16(((i * 16) - (int)Main.screenPosition.X) + Main.offScreenRange, ((j * 16) - (int)Main.screenPosition.Y) + Main.offScreenRange);
