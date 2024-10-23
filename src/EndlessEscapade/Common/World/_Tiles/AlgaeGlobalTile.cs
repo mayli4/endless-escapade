@@ -1,5 +1,4 @@
 ﻿using EndlessEscapade.Utilities;
-using Microsoft.Xna.Framework.Input;
 using ReLogic.Content;
 using Terraria.DataStructures;
 
